@@ -1,0 +1,13 @@
+import Fastify, { type FastifyInstance } from "fastify";
+import cookie from "@fastify/cookie";
+import { env } from "./config/env.js";
+
+export async function buildApp(): Promise<FastifyInstance> {
+  const app = Fastify({ logger: env.NODE_ENV !== "test" });
+
+  await app.register(cookie, { secret: env.COOKIE_SECRET });
+
+  app.get("/health", async () => ({ status: "ok" }));
+
+  return app;
+}

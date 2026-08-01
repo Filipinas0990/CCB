@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gem
+      POSTGRES_PASSWORD: gem
+      POSTGRES_DB: gem_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - gem_pgdata:/var/lib/postgresql/data
+
+volumes:
+  gem_pgdata:
