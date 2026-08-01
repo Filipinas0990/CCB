@@ -8,6 +8,7 @@ const navItems: { to: string; label: string }[] = [
   { to: "frequencia", label: "Frequência" },
   { to: "avisos-ausencia", label: "Avisos de ausência" },
   { to: "cronograma", label: "Cronograma" },
+  { to: "avisos", label: "Avisos" },
 ];
 
 export function ProfessorLayout() {

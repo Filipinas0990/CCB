@@ -10,6 +10,7 @@ import { PessoasPage } from "./pages/professor/PessoasPage";
 import { FrequenciaPage } from "./pages/professor/FrequenciaPage";
 import { AvisosAusenciaPage } from "./pages/professor/AvisosAusenciaPage";
 import { CronogramaPage } from "./pages/professor/CronogramaPage";
+import { AvisosPage } from "./pages/professor/AvisosPage";
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ export function App() {
               <Route path="frequencia" element={<FrequenciaPage />} />
               <Route path="avisos-ausencia" element={<AvisosAusenciaPage />} />
               <Route path="cronograma" element={<CronogramaPage />} />
+              <Route path="avisos" element={<AvisosPage />} />
             </Route>
             <Route path="/" element={<RootRedirect />} />
           </Routes>
