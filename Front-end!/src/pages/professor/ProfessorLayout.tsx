@@ -5,6 +5,7 @@ import { Button } from "../../components/ui/Button";
 const navItems: { to: string; label: string }[] = [
   { to: "cadastro", label: "Cadastro" },
   { to: "pessoas", label: "Pessoas" },
+  { to: "frequencia", label: "Frequência" },
 ];
 
 export function ProfessorLayout() {

@@ -7,6 +7,7 @@ import { AlunoHomePage } from "./pages/aluno/AlunoHomePage";
 import { ProfessorLayout } from "./pages/professor/ProfessorLayout";
 import { CadastroPage } from "./pages/professor/CadastroPage";
 import { PessoasPage } from "./pages/professor/PessoasPage";
+import { FrequenciaPage } from "./pages/professor/FrequenciaPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ export function App() {
               <Route index element={<Navigate to="cadastro" replace />} />
               <Route path="cadastro" element={<CadastroPage />} />
               <Route path="pessoas" element={<PessoasPage />} />
+              <Route path="frequencia" element={<FrequenciaPage />} />
             </Route>
             <Route path="/" element={<RootRedirect />} />
           </Routes>
