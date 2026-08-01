@@ -2,6 +2,7 @@ import { useAuth } from "../../auth/AuthContext";
 import { Button } from "../../components/ui/Button";
 import { FrequenciaSection } from "./FrequenciaSection";
 import { AvisoAusenciaSection } from "./AvisoAusenciaSection";
+import { CronogramaSection } from "./CronogramaSection";
 
 export function AlunoHomePage() {
   const { user, logout } = useAuth();
@@ -18,6 +19,7 @@ export function AlunoHomePage() {
       <main className="space-y-6 p-6">
         {user && <FrequenciaSection alunoId={user.id} />}
         <AvisoAusenciaSection />
+        <CronogramaSection />
       </main>
     </div>
   );
