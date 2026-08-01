@@ -4,6 +4,8 @@ import { db } from "../../db/client.js";
 import { users, perfis } from "../../db/schema.js";
 import { hashPassword } from "../../utils/password.js";
 import { requireAuth, requireProfessor } from "../../middleware/auth.js";
+import { findPerfilByUserId, listPerfis } from "./perfis.service.js";
+import type { User, Perfil } from "../../db/schema.js";
 
 const enderecoFieldsSchema = {
   nomePai: z.string().optional(),
@@ -48,6 +50,20 @@ const professorCadastroSchema = baseCadastroSchema.extend({
 });
 
 const cadastroBodySchema = z.discriminatedUnion("tipo", [alunoCadastroSchema, professorCadastroSchema]);
+
+const idParamSchema = z.object({ id: z.string().uuid() });
+
+function serializePerfil(row: { user: User; perfil: Perfil }) {
+  const { userId: _userId, ...perfilFields } = row.perfil;
+  return {
+    id: row.user.id,
+    login: row.user.login,
+    tipo: row.user.tipo,
+    cargo: row.user.cargo,
+    ativo: row.user.ativo,
+    ...perfilFields,
+  };
+}
 
 export async function perfisRoutes(app: FastifyInstance): Promise<void> {
   app.post("/perfis", { preHandler: [requireAuth, requireProfessor] }, async (request, reply) => {
@@ -120,5 +136,29 @@ export async function perfisRoutes(app: FastifyInstance): Promise<void> {
       cargo: created.user.cargo,
       nomeCompleto: created.perfil.nomeCompleto,
     });
+  });
+
+  app.get("/perfis/:id", { preHandler: [requireAuth] }, async (request, reply) => {
+    const paramsResult = idParamSchema.safeParse(request.params);
+    if (!paramsResult.success) {
+      return reply.code(400).send({ error: "validation_error" });
+    }
+    const { id } = paramsResult.data;
+
+    if (request.user!.tipo === "aluno" && request.user!.id !== id) {
+      return reply.code(403).send({ error: "forbidden" });
+    }
+
+    const row = await findPerfilByUserId(id);
+    if (!row) {
+      return reply.code(404).send({ error: "not_found" });
+    }
+
+    return reply.send(serializePerfil(row));
+  });
+
+  app.get("/perfis", { preHandler: [requireAuth, requireProfessor] }, async (_request, reply) => {
+    const rows = await listPerfis();
+    return reply.send(rows.map(serializePerfil));
   });
 }

@@ -5,6 +5,7 @@ import { perfis } from "../src/db/schema.js";
 import { eq } from "drizzle-orm";
 import { resetDb } from "./helpers/reset-db.js";
 import { createUserWithSession } from "./helpers/auth.js";
+import { createProfessorAndAluno } from "./helpers/fixtures.js";
 
 const alunoPayload = {
   tipo: "aluno" as const,
@@ -25,13 +26,13 @@ const professorPayload = {
   cargo: "encarregado" as const,
 };
 
+afterAll(async () => {
+  await pool.end();
+});
+
 describe("POST /perfis", () => {
   beforeEach(async () => {
     await resetDb();
-  });
-
-  afterAll(async () => {
-    await pool.end();
   });
 
   it("rejects without a session", async () => {
@@ -125,6 +126,80 @@ describe("POST /perfis", () => {
     });
 
     expect(response.statusCode).toBe(409);
+    await app.close();
+  });
+});
+
+describe("GET /perfis/:id and GET /perfis", () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it("lets an aluno read their own perfil", async () => {
+    const { alunoId, alunoCookie } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/perfis/${alunoId}`,
+      headers: { cookie: alunoCookie },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({ id: alunoId, nomeCompleto: "Aluno Fixture" });
+    await app.close();
+  });
+
+  it("blocks an aluno from reading another perfil", async () => {
+    const { professor, alunoCookie } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/perfis/${professor.user.id}`,
+      headers: { cookie: alunoCookie },
+    });
+
+    expect(response.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("lets a professor read any perfil", async () => {
+    const { professor, alunoId } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: `/perfis/${alunoId}`,
+      headers: { cookie: professor.cookie },
+    });
+
+    expect(response.statusCode).toBe(200);
+    await app.close();
+  });
+
+  it("blocks an aluno from listing all perfis", async () => {
+    const { alunoCookie } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({ method: "GET", url: "/perfis", headers: { cookie: alunoCookie } });
+
+    expect(response.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("lets a professor list all perfis", async () => {
+    const { professor, alunoId } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({ method: "GET", url: "/perfis", headers: { cookie: professor.cookie } });
+
+    expect(response.statusCode).toBe(200);
+    // createProfessorAndAluno only creates a `perfis` row for the aluno (via the
+    // real POST /perfis flow); the professor actor comes from the raw test
+    // helper and has no `perfis` row, so it's correctly excluded from this
+    // inner-joined listing.
+    expect(response.json()).toMatchObject([{ id: alunoId }]);
     await app.close();
   });
 });
