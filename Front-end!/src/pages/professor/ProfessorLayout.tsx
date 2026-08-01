@@ -2,7 +2,10 @@ import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import { Button } from "../../components/ui/Button";
 
-const navItems: { to: string; label: string }[] = [];
+const navItems: { to: string; label: string }[] = [
+  { to: "cadastro", label: "Cadastro" },
+  { to: "pessoas", label: "Pessoas" },
+];
 
 export function ProfessorLayout() {
   const { user, logout } = useAuth();

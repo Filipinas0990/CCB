@@ -5,6 +5,8 @@ import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
 import { AlunoHomePage } from "./pages/aluno/AlunoHomePage";
 import { ProfessorLayout } from "./pages/professor/ProfessorLayout";
+import { CadastroPage } from "./pages/professor/CadastroPage";
+import { PessoasPage } from "./pages/professor/PessoasPage";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +45,9 @@ export function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<div className="text-slate-600">Selecione uma opção no menu.</div>} />
+              <Route index element={<Navigate to="cadastro" replace />} />
+              <Route path="cadastro" element={<CadastroPage />} />
+              <Route path="pessoas" element={<PessoasPage />} />
             </Route>
             <Route path="/" element={<RootRedirect />} />
           </Routes>
