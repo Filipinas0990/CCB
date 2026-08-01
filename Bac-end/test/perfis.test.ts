@@ -203,3 +203,90 @@ describe("GET /perfis/:id and GET /perfis", () => {
     await app.close();
   });
 });
+
+describe("PATCH /perfis/:id/senha", () => {
+  beforeEach(async () => {
+    await resetDb();
+  });
+
+  it("rejects without a session", async () => {
+    const { alunoId } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/perfis/${alunoId}/senha`,
+      payload: { senha: "novaSenha123" },
+    });
+
+    expect(response.statusCode).toBe(401);
+    await app.close();
+  });
+
+  it("rejects when the session belongs to an aluno", async () => {
+    const { alunoId, alunoCookie } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/perfis/${alunoId}/senha`,
+      payload: { senha: "novaSenha123" },
+      headers: { cookie: alunoCookie },
+    });
+
+    expect(response.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("rejects a senha shorter than 6 characters", async () => {
+    const { professor, alunoId } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/perfis/${alunoId}/senha`,
+      payload: { senha: "123" },
+      headers: { cookie: professor.cookie },
+    });
+
+    expect(response.statusCode).toBe(400);
+    await app.close();
+  });
+
+  it("returns 404 for an unknown perfil", async () => {
+    const { professor } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: "/perfis/00000000-0000-0000-0000-000000000000/senha",
+      payload: { senha: "novaSenha123" },
+      headers: { cookie: professor.cookie },
+    });
+
+    expect(response.statusCode).toBe(404);
+    await app.close();
+  });
+
+  it("lets a professor reset an aluno's senha, and the aluno can log in with it", async () => {
+    const { professor, alunoId } = await createProfessorAndAluno();
+    const app = await buildApp();
+
+    const resetResponse = await app.inject({
+      method: "PATCH",
+      url: `/perfis/${alunoId}/senha`,
+      payload: { senha: "novaSenha123" },
+      headers: { cookie: professor.cookie },
+    });
+    expect(resetResponse.statusCode).toBe(204);
+
+    const loginResponse = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: { login: "aluno.fixture", senha: "novaSenha123" },
+    });
+    expect(loginResponse.statusCode).toBe(200);
+
+    await app.close();
+  });
+});

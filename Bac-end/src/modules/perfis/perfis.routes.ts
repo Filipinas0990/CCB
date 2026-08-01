@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { db } from "../../db/client.js";
 import { users, perfis } from "../../db/schema.js";
 import { hashPassword } from "../../utils/password.js";
@@ -52,6 +53,8 @@ const professorCadastroSchema = baseCadastroSchema.extend({
 const cadastroBodySchema = z.discriminatedUnion("tipo", [alunoCadastroSchema, professorCadastroSchema]);
 
 const idParamSchema = z.object({ id: z.string().uuid() });
+
+const resetSenhaBodySchema = z.object({ senha: z.string().min(6) });
 
 function serializePerfil(row: { user: User; perfil: Perfil }) {
   const { userId: _userId, ...perfilFields } = row.perfil;
@@ -160,5 +163,30 @@ export async function perfisRoutes(app: FastifyInstance): Promise<void> {
   app.get("/perfis", { preHandler: [requireAuth, requireProfessor] }, async (_request, reply) => {
     const rows = await listPerfis();
     return reply.send(rows.map(serializePerfil));
+  });
+
+  app.patch("/perfis/:id/senha", { preHandler: [requireAuth, requireProfessor] }, async (request, reply) => {
+    const paramsResult = idParamSchema.safeParse(request.params);
+    if (!paramsResult.success) {
+      return reply.code(400).send({ error: "validation_error" });
+    }
+    const bodyResult = resetSenhaBodySchema.safeParse(request.body);
+    if (!bodyResult.success) {
+      return reply.code(400).send({ error: "validation_error", details: bodyResult.error.flatten() });
+    }
+
+    const { id } = paramsResult.data;
+    const existing = await findPerfilByUserId(id);
+    if (!existing) {
+      return reply.code(404).send({ error: "not_found" });
+    }
+
+    const senhaHash = await hashPassword(bodyResult.data.senha);
+    await db
+      .update(users)
+      .set({ senhaHash, updatedBy: request.user!.id, updatedAt: new Date() })
+      .where(eq(users.id, id));
+
+    return reply.code(204).send();
   });
 }
