@@ -9,6 +9,7 @@ const navItems: { to: string; label: string }[] = [
   { to: "avisos-ausencia", label: "Avisos de ausência" },
   { to: "cronograma", label: "Cronograma" },
   { to: "avisos", label: "Avisos" },
+  { to: "calendario-horario", label: "Calendário & Horário" },
 ];
 
 export function ProfessorLayout() {

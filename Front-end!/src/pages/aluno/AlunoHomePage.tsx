@@ -4,6 +4,7 @@ import { FrequenciaSection } from "./FrequenciaSection";
 import { AvisoAusenciaSection } from "./AvisoAusenciaSection";
 import { CronogramaSection } from "./CronogramaSection";
 import { AvisosSection } from "./AvisosSection";
+import { CalendarioHorarioSection } from "./CalendarioHorarioSection";
 
 export function AlunoHomePage() {
   const { user, logout } = useAuth();
@@ -22,6 +23,7 @@ export function AlunoHomePage() {
         <AvisoAusenciaSection />
         <CronogramaSection />
         <AvisosSection />
+        <CalendarioHorarioSection />
       </main>
     </div>
   );
