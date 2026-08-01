@@ -7,6 +7,8 @@ import { frequenciaRoutes } from "./modules/frequencia/frequencia.routes.js";
 import { avisosAusenciaRoutes } from "./modules/avisos-ausencia/avisos-ausencia.routes.js";
 import { cronogramaRoutes } from "./modules/cronograma/cronograma.routes.js";
 import { avisosRoutes } from "./modules/avisos/avisos.routes.js";
+import { calendarioRoutes } from "./modules/calendario/calendario.routes.js";
+import { horarioRoutes } from "./modules/horario/horario.routes.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: env.NODE_ENV !== "test" });
@@ -22,6 +24,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(avisosAusenciaRoutes);
   await app.register(cronogramaRoutes);
   await app.register(avisosRoutes);
+  await app.register(calendarioRoutes);
+  await app.register(horarioRoutes);
 
   return app;
 }
