@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cookie from "@fastify/cookie";
 import { env } from "./config/env.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
+import { perfisRoutes } from "./modules/perfis/perfis.routes.js";
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: env.NODE_ENV !== "test" });
@@ -12,6 +13,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.get("/health", async () => ({ status: "ok" }));
 
   await app.register(authRoutes);
+  await app.register(perfisRoutes);
 
   return app;
 }
